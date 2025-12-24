@@ -1,10 +1,17 @@
 <html>
     <body>
         <div id="intro" class="intro">
-            This action will bulk update all the assets status. x
+            Loading assets from folder...
         </div>
-        <div></div>
-        <div id="folderDiv" class="panel">
+        <div class="controls">
+            <div id="folderDiv" class="panel"></div>
+            <div class="view-toggle">
+                <button id="tableViewBtn" class="view-btn active">Table</button>
+                <button id="thumbnailViewBtn" class="view-btn">Thumbnails</button>
+            </div>
+        </div>
+        <div id="assetsContainer" class="assets-container">
+            <!-- Assets will be rendered here -->
         </div>
         <div id="statusDiv" class="panel">
             <label id="statusLabel" for="status"></label>
@@ -12,7 +19,7 @@
             </select>
         </div>
         <div class="panel">
-            <button id="update">Update</button>
+            <button id="update">Update Status</button>
         </div>
     </body>
 </html>
