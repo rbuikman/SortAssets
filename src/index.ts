@@ -122,35 +122,42 @@ async function onUpdate() {
     console.error('Error stack:', error?.stack);
     
     // Safe way to get current URL
-    let currentUrl = 'unknown';
+    let ancestorUrl = 'unknown';
+    let isInIframe = window.self !== window.top;
+    
     try {
-      currentUrl = window.location.ancestorOrigins?.[0] || parentOrigin;
+      if (window.location.ancestorOrigins && window.location.ancestorOrigins.length > 0) {
+        ancestorUrl = window.location.ancestorOrigins[0];
+      }
     } catch (e) {
-      console.log('Cannot determine parent URL');
+      console.log('Cannot determine ancestor URL');
     }
     
     const errorMessage = error?.message || error?.toString() || 'Unknown error';
     
-    console.log('Current URL for whitelist check:', currentUrl);
+    console.log('Is in iframe:', isInIframe);
+    console.log('Ancestor URL:', ancestorUrl);
     console.log('Error message content:', errorMessage);
     
-    if (errorMessage.includes('whitelist') || errorMessage.includes('not allowed') || errorMessage.includes('origin')) {
-      // Whitelist configuration error
+    // Check if we're embedded in WoodWing Assets but connection failed
+    if (isInIframe && ancestorUrl !== 'unknown') {
+      // We're in an iframe with a known parent URL - this is likely a whitelist issue
       isDemoMode = true;
-      console.error('>>> WHITELIST ERROR DETECTED <<<');
-      console.error('Whitelist error:', error);
-      console.log('Current parent URL:', currentUrl);
+      console.error('>>> WHITELIST CONFIGURATION ERROR <<<');
+      console.error('Plugin is embedded but cannot connect to Assets SDK');
+      console.log('Parent URL:', ancestorUrl);
       console.log('Configured whitelist:', config.CLIENT_URL_WHITELIST);
       
       introDiv.innerHTML = `
         <strong style="color: red;">Configuration Error</strong><br>
         <p>The plugin cannot connect to WoodWing Assets.</p>
-        <p><strong>Parent URL:</strong> ${currentUrl}</p>
-        <p>Please add this URL to the <code>CLIENT_URL_WHITELIST</code> in config.js</p>
+        <p><strong>Parent URL:</strong> <code>${ancestorUrl}</code></p>
+        <p>Please add this URL to the <code>CLIENT_URL_WHITELIST</code> in <code>config.js</code></p>
+        <p><small>Current whitelist: ${JSON.stringify(config.CLIENT_URL_WHITELIST)}</small></p>
         <p><small>See browser console for more details.</small></p>
       `;
       document.getElementById('update').onclick = function() {
-        alert('Cannot update: Plugin not connected to WoodWing Assets.\n\nParent URL: ' + currentUrl + '\n\nAdd this URL to CLIENT_URL_WHITELIST in config.js');
+        alert('Cannot update: Plugin not connected to WoodWing Assets.\n\nParent URL: ' + ancestorUrl + '\n\nPlease add this URL to CLIENT_URL_WHITELIST in config.js');
       };
       loadStatus();
     } else {
