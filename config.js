@@ -2,6 +2,7 @@ module.exports = {
     // Add your WoodWing Assets Server URL(s) here
     // Examples: 'https://your-assets-server.com', 'http://localhost:8080'
     CLIENT_URL_WHITELIST: [
+        'https://shared-poc-dam.qonqord.cloud',  // Your WoodWing Assets URL
         'http://localhost:50',
         'http://localhost:8080',
         'https://*.woodwing.com',
