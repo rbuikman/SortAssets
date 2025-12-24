@@ -7,6 +7,5 @@ module.exports = {
         'http://localhost:8080',
         'https://*.woodwing.com',
         '*' // Allow all origins for testing - restrict this in production!
-    ],
-    NEW_STATUS: ['Send To Cold Storage', 'Restore from Cold Storage']
+    ]
 };

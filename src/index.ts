@@ -33,14 +33,19 @@ async function fetchAssets() {
     } else {
       folderSelection = contextService.context.activeTab.folderSelection;
       
-      // Check if folder is selected, otherwise try to load from session storage
-      if (folderSelection && folderSelection.length > 0) {
+      console.log('Folder selection from WoodWing:', folderSelection);
+      console.log('Stored folder:', sessionStorage.getItem('lastSelectedFolder'));
+      
+      // Check if a valid folder is selected (not empty or root)
+      if (folderSelection && folderSelection.length > 0 && folderSelection[0].assetPath && folderSelection[0].assetPath !== '') {
         folderPath = folderSelection[0].assetPath;
         // Store in session storage for future use
         sessionStorage.setItem('lastSelectedFolder', folderPath);
+        console.log('Saved folder to storage:', folderPath);
       } else {
         // Try to load from session storage
         const storedFolderPath = sessionStorage.getItem('lastSelectedFolder');
+        console.log('No valid folder selected, using stored folder:', storedFolderPath);
         if (storedFolderPath) {
           folderPath = storedFolderPath;
         } else {
@@ -143,7 +148,7 @@ function initializeSortable() {
   
   sortableInstance = new Sortable(sortableList, {
     animation: 150,
-    handle: viewMode === 'table' ? '.drag-handle' : '.asset-card',
+    handle: viewMode === 'table' ? 'tr' : '.asset-card',
     ghostClass: 'sortable-ghost',
     onEnd: (evt) => {
       // Reorder assets array
