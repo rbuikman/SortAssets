@@ -7,6 +7,7 @@ const folderDiv = document.getElementById('folderDiv');
 const statusList = document.getElementById('status');
 const statusLabel = document.getElementById('statusLabel');
 const introDiv = document.getElementById('intro');
+const folderPathSpan = document.getElementById('folderPath');
 const assetsContainer = document.getElementById('assetsContainer');
 const tableViewBtn = document.getElementById('tableViewBtn');
 const thumbnailViewBtn = document.getElementById('thumbnailViewBtn');
@@ -177,7 +178,9 @@ const loadStatus = async () => {
     folderSelection = contextService.context.activeTab.folderSelection;
   }
   
-  folderDiv.innerHTML = '<b>Folder</b>: ' + folderSelection[0].name;
+  const folderName = folderSelection[0].name;
+  folderDiv.innerHTML = '<b>Folder</b>: ' + folderName;
+  folderPathSpan.innerHTML = folderName;
 
   const newStatus:[] = config.NEW_STATUS;
   console.log('Status options:', newStatus);
