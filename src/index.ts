@@ -77,7 +77,7 @@ async function fetchAssets() {
       }
       
       // Query to get all assets in the folder
-      const query = `ancestorPaths:"${folderPath}" AND !assetType:collection`;
+      const query = `ancestorPaths:"${folderPath}" AND NOT assetType:collection`;
       const searchResponse = await apiClient.search({
         q: query,
         num: 100,
