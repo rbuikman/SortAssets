@@ -4,8 +4,6 @@ import './style.css';
 import * as config from '../config.js';
 
 const folderDiv = document.getElementById('folderDiv');
-const statusList = document.getElementById('status');
-const statusLabel = document.getElementById('statusLabel');
 const introDiv = document.getElementById('intro');
 const folderPathSpan = document.getElementById('folderPath');
 const assetsContainer = document.getElementById('assetsContainer');
@@ -167,8 +165,8 @@ function getAssetSize(asset: any): string {
   return mb >= 1 ? `${mb.toFixed(1)} MB` : `${kb.toFixed(0)} KB`;
 }
 
-const loadStatus = async () => {
-  console.log('loadStatus called, isDemoMode:', isDemoMode);
+const loadFolderInfo = async () => {
+  console.log('loadFolderInfo called, isDemoMode:', isDemoMode);
   let folderSelection;
   
   if (isDemoMode) {
@@ -181,16 +179,6 @@ const loadStatus = async () => {
   const folderName = folderSelection[0].name;
   folderDiv.innerHTML = '<b>Folder</b>: ' + folderName;
   folderPathSpan.innerHTML = folderName;
-
-  const newStatus:[] = config.NEW_STATUS;
-  console.log('Status options:', newStatus);
-  let htmlOption:string = '';
-  newStatus.forEach( function (status) {
-    htmlOption += '<option value="' + status +'">' + status + '</option>';
-  });  
-  statusList.innerHTML = htmlOption;
-  statusLabel.innerHTML = '<b>Status</b>: ';
-  console.log('Status dropdown populated with', newStatus.length, 'options');
   
   // Fetch and display assets
   await fetchAssets();
@@ -214,21 +202,6 @@ function toggleView(mode: 'table' | 'thumbnails') {
 // Event listeners for view toggle buttons
 tableViewBtn.addEventListener('click', () => toggleView('table'));
 thumbnailViewBtn.addEventListener('click', () => toggleView('thumbnails'));
-
-async function onUpdate() {
-  if (isDemoMode) {
-    alert('Demo mode: This would update assets in the selected folder with the chosen status.');
-    return;
-  }
-  
-  const folderSelection = contextService.context.activeTab.folderSelection;
-  const status = (<HTMLSelectElement>document.getElementById('status')).value;
-  const query = 'ancestorPaths:"' + folderSelection[0].assetPath + '" -status:"' + status + '"';
-  const metadata = { 'status': status };
-
-  await apiClient.updatebulk(query, metadata);
-  contextService.close();
-}
 
 (async () => {
   console.log('=== Plugin initialization started ===');
@@ -292,8 +265,7 @@ async function onUpdate() {
     apiClient = AssetsApiClient.fromPluginContext(contextService);
     console.log('API Client created:', apiClient);
     
-    document.getElementById('update').onclick = function() {onUpdate()};
-    await loadStatus();
+    await loadFolderInfo();
     console.log('=== Plugin initialization complete ===');
   } catch (error) {
     console.error('=== Error during initialization ===');
@@ -336,10 +308,7 @@ async function onUpdate() {
         <p><small>Current whitelist: ${JSON.stringify(config.CLIENT_URL_WHITELIST)}</small></p>
         <p><small>See browser console for more details.</small></p>
       `;
-      document.getElementById('update').onclick = function() {
-        alert('Cannot update: Plugin not connected to WoodWing Assets.\n\nParent URL: ' + ancestorUrl + '\n\nPlease add this URL to CLIENT_URL_WHITELIST in config.js');
-      };
-      loadStatus();
+      await loadFolderInfo();
     } else {
       // Running in standalone mode (not embedded in WoodWing Assets)
       isDemoMode = true;
@@ -347,8 +316,7 @@ async function onUpdate() {
       console.log('Running in demo mode - not connected to WoodWing Assets');
       console.log('Error:', error);
       introDiv.innerHTML = '<strong>Demo Mode</strong><br>This plugin must be embedded in WoodWing Assets to work properly. Currently showing demo data.';
-      document.getElementById('update').onclick = function() {onUpdate()};
-      loadStatus();
+      await loadFolderInfo();
     }
   }
 })();
