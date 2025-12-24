@@ -53,8 +53,27 @@ async function onUpdate() {
 (async () => {
   console.log('=== Plugin initialization started ===');
   console.log('Window location:', window.location.href);
-  console.log('Parent origin:', window.parent?.location?.origin || 'Cannot access parent origin');
-  console.log('Ancestor origins:', window.location.ancestorOrigins);
+  
+  // Safe way to check parent origin (won't cause CORS errors)
+  let parentOrigin = 'Cannot access (cross-origin)';
+  try {
+    parentOrigin = window.parent.location.origin;
+  } catch (e) {
+    console.log('Cannot access parent.location.origin (cross-origin restriction)');
+  }
+  console.log('Parent origin:', parentOrigin);
+  
+  // Ancestor origins (only available in some browsers)
+  try {
+    if (window.location.ancestorOrigins && window.location.ancestorOrigins.length > 0) {
+      console.log('Ancestor origins:', Array.from(window.location.ancestorOrigins));
+    } else {
+      console.log('Ancestor origins: Not available');
+    }
+  } catch (e) {
+    console.log('Ancestor origins: Error accessing');
+  }
+  
   console.log('Is in iframe:', window.self !== window.top);
   console.log('Configured whitelist:', config.CLIENT_URL_WHITELIST);
   
@@ -102,8 +121,14 @@ async function onUpdate() {
     console.error('Error message:', error?.message);
     console.error('Error stack:', error?.stack);
     
-    // Check if it's a whitelist error
-    const currentUrl = window.location.ancestorOrigins?.[0] || window.parent?.location?.origin || 'unknown';
+    // Safe way to get current URL
+    let currentUrl = 'unknown';
+    try {
+      currentUrl = window.location.ancestorOrigins?.[0] || parentOrigin;
+    } catch (e) {
+      console.log('Cannot determine parent URL');
+    }
+    
     const errorMessage = error?.message || error?.toString() || 'Unknown error';
     
     console.log('Current URL for whitelist check:', currentUrl);
