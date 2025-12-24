@@ -1,0 +1,9 @@
+.panel {
+    padding: 10px 20px;
+    width: 100%;
+    flex-direction: column;
+}
+
+.intro {
+    padding-bottom: 20px;
+}
