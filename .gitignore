@@ -4,8 +4,7 @@ node_modules/
 # Build output
 dist/
 
-# IDE
-.vscode/
+# IDE - keep VS Code settings for debugging
 .idea/
 *.swp
 *.swo
