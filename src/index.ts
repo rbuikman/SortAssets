@@ -32,7 +32,22 @@ async function fetchAssets() {
       ];
     } else {
       folderSelection = contextService.context.activeTab.folderSelection;
-      folderPath = folderSelection[0].assetPath;
+      
+      // Check if folder is selected, otherwise try to load from session storage
+      if (folderSelection && folderSelection.length > 0) {
+        folderPath = folderSelection[0].assetPath;
+        // Store in session storage for future use
+        sessionStorage.setItem('lastSelectedFolder', folderPath);
+      } else {
+        // Try to load from session storage
+        const storedFolderPath = sessionStorage.getItem('lastSelectedFolder');
+        if (storedFolderPath) {
+          folderPath = storedFolderPath;
+        } else {
+          introDiv.innerHTML = '<span class="error">No folder selected. Please select a folder in WoodWing Assets.</span>';
+          return;
+        }
+      }
       
       // Query to get all assets in the folder
       const query = `ancestorPaths:"${folderPath}"`;
@@ -46,7 +61,7 @@ async function fetchAssets() {
     }
     
     renderAssets();
-    introDiv.innerHTML = `Sorting <b>${assets.length}</b> assets in folder [${folderPath}]`;
+    introDiv.innerHTML = `Sorting <b>${assets.length}</b> assets in folder ${folderPath}`;
   } catch (error) {
     introDiv.innerHTML = '<span class="error">Error loading assets</span>';
   }
