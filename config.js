@@ -7,5 +7,13 @@ module.exports = {
         'http://localhost:8080',
         'https://*.woodwing.com',
         '*' // Allow all origins for testing - restrict this in production!
-    ]
+    ],
+
+    // Configure which columns to show in the table view per WoodWing Assets URL
+    // Use '*' to show all asset properties dynamically, or specify an array of property names
+    // Property names can use dot notation for nested properties: 'metadata.status'
+    COLUMN_CONFIG: {
+        'https://shared-poc-dam.qonqord.cloud': ['name', 'status'], // Show all properties for this URL
+        'default': ['name', 'status', 'id', 'fileSize'] // Default columns for any other URL
+    }
 };

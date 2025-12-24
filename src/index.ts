@@ -14,6 +14,28 @@ let isDemoMode = false;
 let viewMode: 'table' | 'thumbnails' = 'table';
 let assets: any[] = [];
 let sortableInstance: Sortable | null = null;
+let currentParentUrl: string = '';
+
+// Load saved view mode from session storage
+const savedViewMode = sessionStorage.getItem('viewMode');
+if (savedViewMode === 'table' || savedViewMode === 'thumbnails') {
+  viewMode = savedViewMode;
+}
+
+// Get column configuration for the current URL
+function getColumnConfig(): string | string[] {
+  if (!config.COLUMN_CONFIG) {
+    return '*'; // Default to all columns if no config
+  }
+  
+  // Try to find exact match first
+  if (currentParentUrl && config.COLUMN_CONFIG[currentParentUrl]) {
+    return config.COLUMN_CONFIG[currentParentUrl];
+  }
+  
+  // Fall back to default
+  return config.COLUMN_CONFIG['default'] || '*';
+}
 
 // Fetch assets from the selected folder
 async function fetchAssets() {
@@ -94,15 +116,54 @@ function renderAssets() {
 
 // Render table view
 function renderTableView() {
+  if (assets.length === 0) {
+    assetsContainer.innerHTML = '<div class="loading">No assets to display</div>';
+    return;
+  }
+  
+  // Get columns from config based on current URL
+  let columns: string[];
+  const columnConfig = getColumnConfig();
+  
+  if (columnConfig === '*') {
+    // Get all properties from metadata only
+    const firstAsset = assets[0];
+    if (firstAsset.metadata) {
+      columns = Object.keys(firstAsset.metadata).filter(key => 
+        typeof firstAsset.metadata[key] !== 'object' ||
+        firstAsset.metadata[key] === null
+      );
+    } else {
+      columns = ['name'];
+    }
+  } else {
+    columns = Array.isArray(columnConfig) ? columnConfig : ['name'];
+  }
+  
+  // Helper to get nested property value from metadata
+  const getPropertyValue = (obj: any, path: string): string => {
+    // Always read from metadata
+    const value = obj.metadata?.[path];
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'object') return JSON.stringify(value);
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    return String(value);
+  };
+  
+  // Format column header (camelCase to Title Case)
+  const formatHeader = (col: string): string => {
+    const lastPart = col.includes('.') ? col.split('.').pop() : col;
+    return lastPart.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  };
+  
   const html = `
     <table class="assets-table">
       <thead>
         <tr>
           <th></th>
           <th>Preview</th>
-          <th>Name</th>
-          <th>Status</th>
-          <th>Size</th>
+          ${columns.map(col => `<th>${formatHeader(col)}</th>`).join('')}
+          <th></th>
         </tr>
       </thead>
       <tbody id="sortableList">
@@ -112,9 +173,16 @@ function renderTableView() {
             <td>
               <img src="${getAssetPreview(asset)}" alt="${getAssetName(asset)}" class="asset-thumbnail" />
             </td>
-            <td>${getAssetName(asset)}</td>
-            <td>${getAssetStatus(asset)}</td>
-            <td>${getAssetSize(asset)}</td>
+            ${columns.map(col => `<td>${getPropertyValue(asset, col)}</td>`).join('')}
+            <td>
+              <a class="asset-link" target="_blank" href="${currentParentUrl}/app/#/search/id:${asset.id}/name-asc/" title="Open asset in new tab">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+            </td>
           </tr>
         `).join('')}
       </tbody>
@@ -125,14 +193,54 @@ function renderTableView() {
 
 // Render thumbnail view
 function renderThumbnailView() {
+  if (assets.length === 0) {
+    assetsContainer.innerHTML = '<div class="loading">No assets to display</div>';
+    return;
+  }
+  
+  // Get columns from config based on current URL
+  let columns: string[];
+  const columnConfig = getColumnConfig();
+  
+  if (columnConfig === '*') {
+    // Get all properties from metadata only
+    const firstAsset = assets[0];
+    if (firstAsset.metadata) {
+      columns = Object.keys(firstAsset.metadata).filter(key => 
+        typeof firstAsset.metadata[key] !== 'object' ||
+        firstAsset.metadata[key] === null
+      );
+    } else {
+      columns = ['name'];
+    }
+  } else {
+    columns = Array.isArray(columnConfig) ? columnConfig : ['name'];
+  }
+  
+  // Helper to get property value from metadata
+  const getPropertyValue = (obj: any, path: string): string => {
+    const value = obj.metadata?.[path];
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'object') return JSON.stringify(value);
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    return String(value);
+  };
+  
   const html = `
     <div class="assets-grid" id="sortableList">
       ${assets.map(asset => `
         <div class="asset-card" data-id="${asset.id}">
+          <a class="asset-link-icon" target="_blank" href="${currentParentUrl}/app/#/search/id:${asset.id}/name-asc/" title="Open asset in new tab">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
           <img src="${getAssetPreview(asset)}" alt="${getAssetName(asset)}" class="asset-card-thumbnail" />
-          <div class="asset-card-name">${getAssetName(asset)}</div>
+          <div class="asset-card-name">${columns.length > 0 ? getPropertyValue(asset, columns[0]) : getAssetName(asset)}</div>
           <div class="asset-card-info">
-            ${getAssetStatus(asset)} • ${getAssetSize(asset)}
+            ${columns.slice(1).map(col => getPropertyValue(asset, col)).filter(v => v).join(' • ')}
           </div>
         </div>
       `).join('')}
@@ -158,32 +266,15 @@ function initializeSortable() {
   });
 }
 
-// Helper functions to get asset properties
+// Helper functions to get asset properties from metadata
 function getAssetName(asset: any): string {
-  return asset.name || asset.metadata?.name || 'Unnamed';
+  return asset.metadata?.name || 'Unnamed';
 }
 
 function getAssetPreview(asset: any): string {
-  // Try various thumbnail properties that might be in the asset response
+  // Preview/thumbnail URLs are at the top level, not in metadata
   return asset.thumbnailUrl || 
-         asset.previewUrl || 
-         asset.metadata?.previewUrl || 
-         asset.metadata?.thumbnailUrl ||
-         (asset.metadata?.thumbnail ? `${asset.metadata.thumbnail}` : null) ||
-         'https://via.placeholder.com/150?text=No+Preview';
-}
-
-function getAssetStatus(asset: any): string {
-  return asset.status || asset.metadata?.status || 'Unknown';
-}
-
-function getAssetSize(asset: any): string {
-  if (asset.fileSize) return asset.fileSize;
-  const bytes = asset.metadata?.fileSize || 0;
-  if (bytes === 0) return 'Unknown';
-  const kb = bytes / 1024;
-  const mb = kb / 1024;
-  return mb >= 1 ? `${mb.toFixed(1)} MB` : `${kb.toFixed(0)} KB`;
+         asset.previewUrl;
 }
 
 const loadFolderInfo = async () => {
@@ -196,6 +287,9 @@ const loadFolderInfo = async () => {
 function toggleView(mode: 'table' | 'thumbnails') {
   viewMode = mode;
   
+  // Save view mode preference
+  sessionStorage.setItem('viewMode', mode);
+  
   if (mode === 'table') {
     tableViewBtn.classList.add('active');
     thumbnailViewBtn.classList.remove('active');
@@ -205,6 +299,15 @@ function toggleView(mode: 'table' | 'thumbnails') {
   }
   
   renderAssets();
+}
+
+// Apply saved view mode to UI on load
+if (viewMode === 'thumbnails') {
+  thumbnailViewBtn.classList.add('active');
+  tableViewBtn.classList.remove('active');
+} else {
+  tableViewBtn.classList.add('active');
+  thumbnailViewBtn.classList.remove('active');
 }
 
 // Event listeners for view toggle buttons
@@ -226,6 +329,15 @@ thumbnailViewBtn.addEventListener('click', () => toggleView('thumbnails'));
       contextPromise,
       timeoutPromise
     ]) as AssetsPluginContext;
+    
+    // Capture the parent URL for column configuration
+    try {
+      if (window.location.ancestorOrigins && window.location.ancestorOrigins.length > 0) {
+        currentParentUrl = window.location.ancestorOrigins[0];
+      }
+    } catch (e) {
+      // Cannot determine ancestor URL
+    }
     
     apiClient = AssetsApiClient.fromPluginContext(contextService);
     
