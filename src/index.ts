@@ -46,7 +46,7 @@ async function fetchAssets() {
     }
     
     renderAssets();
-    introDiv.innerHTML = `<b>${assets.length}</b> assets in folder [${folderPath}]`;
+    introDiv.innerHTML = `Sorting <b>${assets.length}</b> assets in folder [${folderPath}]`;
   } catch (error) {
     introDiv.innerHTML = '<span class="error">Error loading assets</span>';
   }
