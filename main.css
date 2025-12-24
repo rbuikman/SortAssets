@@ -198,47 +198,6 @@ body {
     margin-top: 4px;
 }
 
-#status {
-    padding: 5px 10px;
-    border: 1px solid #e2e2e2;
-    border-radius: 2px;
-    font-size: 13px;
-    margin-left: 10px;
-    color: #777;
-    font-family: Lato, sans-serif;
-    height: 25px;
-}
-
-#status:hover {
-    border-color: #959595;
-}
-
-#update {
-    padding: 5px 20px;
-    background: #0095e0;
-    color: #fff;
-    border: 1px solid #0095e0;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: Mulish-SemiBold, OpenSans-SemiBold, Lato, sans-serif;
-    height: 25px;
-    line-height: 14px;
-}
-
-#update:hover {
-    background: #0081c2;
-    border-color: #0081c2;
-}
-
-#update:disabled {
-    background: #eee;
-    border-color: #eee;
-    color: #fff;
-    cursor: default;
-}
-
 .loading {
     text-align: center;
     padding: 40px;
