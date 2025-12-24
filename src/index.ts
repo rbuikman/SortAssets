@@ -77,7 +77,7 @@ async function fetchAssets() {
       }
       
       // Query to get all assets in the folder
-      const query = `ancestorPaths:"${folderPath}"`;
+      const query = `ancestorPaths:"${folderPath}" AND !assetType:collection`;
       const searchResponse = await apiClient.search({
         q: query,
         num: 100,
@@ -85,7 +85,8 @@ async function fetchAssets() {
         appendRequestSecret: true
       });
       
-      assets = searchResponse.hits || [];
+      // Filter out collections
+      assets = (searchResponse.hits || []);
     }
     
     renderAssets();
@@ -238,7 +239,7 @@ function renderThumbnailView() {
             </svg>
           </a>
           <img src="${getAssetPreview(asset)}" alt="${getAssetName(asset)}" class="asset-card-thumbnail" />
-          <div class="asset-card-name">${columns.length > 0 ? getPropertyValue(asset, columns[0]) : getAssetName(asset)}</div>
+          <div class="asset-card-name" title="${columns.length > 0 ? getPropertyValue(asset, columns[0]) : getAssetName(asset)}">${columns.length > 0 ? getPropertyValue(asset, columns[0]) : getAssetName(asset)}</div>
           <div class="asset-card-info">
             ${columns.slice(1).map(col => getPropertyValue(asset, col)).filter(v => v).join(' • ')}
           </div>
@@ -274,7 +275,8 @@ function getAssetName(asset: any): string {
 function getAssetPreview(asset: any): string {
   // Preview/thumbnail URLs are at the top level, not in metadata
   return asset.thumbnailUrl || 
-         asset.previewUrl;
+         asset.previewUrl ||
+         'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150"%3E%3Crect width="150" height="150" fill="%23f0f0f0"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="%23999"%3ENo Preview%3C/text%3E%3C/svg%3E';
 }
 
 const loadFolderInfo = async () => {
