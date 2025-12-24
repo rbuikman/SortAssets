@@ -54,7 +54,8 @@ async function fetchAssets() {
       const searchResponse = await apiClient.search({
         q: query,
         num: 100,
-        sort: 'name'
+        sort: 'name',
+        appendRequestSecret: true
       });
       
       assets = searchResponse.hits || [];
@@ -158,7 +159,13 @@ function getAssetName(asset: any): string {
 }
 
 function getAssetPreview(asset: any): string {
-  return asset.previewUrl || asset.thumbnailUrl || asset.metadata?.previewUrl || 'https://via.placeholder.com/150?text=No+Preview';
+  // Try various thumbnail properties that might be in the asset response
+  return asset.thumbnailUrl || 
+         asset.previewUrl || 
+         asset.metadata?.previewUrl || 
+         asset.metadata?.thumbnailUrl ||
+         (asset.metadata?.thumbnail ? `${asset.metadata.thumbnail}` : null) ||
+         'https://via.placeholder.com/150?text=No+Preview';
 }
 
 function getAssetStatus(asset: any): string {
