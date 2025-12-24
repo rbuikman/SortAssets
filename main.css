@@ -34,6 +34,34 @@ body {
     border-bottom: 1px solid #e2e2e2;
 }
 
+.column-config {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.column-config label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    font-family: Mulish-SemiBold, OpenSans-SemiBold, Lato, sans-serif;
+}
+
+#columnSelector {
+    padding: 4px 8px;
+    border: 1px solid #e2e2e2;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: Lato, sans-serif;
+    background: #fff;
+    color: #333;
+    min-width: 120px;
+}
+
+#columnSelector option {
+    padding: 3px;
+}
+
 .view-toggle {
     display: flex;
     gap: 0;
