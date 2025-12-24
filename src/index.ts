@@ -3,8 +3,8 @@ import './style.css';
 import * as config from '../config.js';
 
 const folderDiv = document.getElementById('folderDiv');
-const statusDiv = document.getElementById('statusDiv');
 const statusList = document.getElementById('status');
+const statusLabel = document.getElementById('statusLabel');
 const introDiv = document.getElementById('intro');
 
 let apiClient: AssetsApiClient;
@@ -29,7 +29,7 @@ const loadStatus = () => {
     htmlOption += '<option value="' + status +'">' + status + '</option>';
   });  
   statusList.innerHTML = htmlOption;
-  statusDiv.innerHTML = '<b>Status</b>: ' + statusDiv.innerHTML;
+  statusLabel.innerHTML = '<b>Status</b>: ';
 };
 
 async function onUpdate() {
