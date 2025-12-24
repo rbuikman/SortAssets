@@ -28,6 +28,9 @@ module.exports = {
   },
   devServer: {
     port: 4002,
+    client: {
+      logging: 'warn', // Only show warnings and errors
+    },
   },
   resolve: {
     extensions: ['.ts', '.js'],

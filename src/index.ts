@@ -12,6 +12,7 @@ let contextService: AssetsPluginContext;
 let isDemoMode = false;
 
 const loadStatus = () => {
+  console.log('loadStatus called, isDemoMode:', isDemoMode);
   let folderSelection;
   
   if (isDemoMode) {
@@ -24,12 +25,14 @@ const loadStatus = () => {
   folderDiv.innerHTML = '<b>Folder</b>: ' + folderSelection[0].name;
 
   const newStatus:[] = config.NEW_STATUS;
+  console.log('Status options:', newStatus);
   let htmlOption:string = '';
   newStatus.forEach( function (status) {
     htmlOption += '<option value="' + status +'">' + status + '</option>';
   });  
   statusList.innerHTML = htmlOption;
   statusLabel.innerHTML = '<b>Status</b>: ';
+  console.log('Status dropdown populated with', newStatus.length, 'options');
 };
 
 async function onUpdate() {
@@ -48,12 +51,26 @@ async function onUpdate() {
 }
 
 (async () => {
+  console.log('Plugin initialization started');
   try {
-    contextService = await AssetsPluginContext.get(config.CLIENT_URL_WHITELIST);
+    console.log('Attempting to connect to Assets SDK...');
+    
+    // Add timeout to prevent hanging when not embedded in Assets
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout: Not embedded in WoodWing Assets')), 2000)
+    );
+    
+    contextService = await Promise.race([
+      AssetsPluginContext.get(config.CLIENT_URL_WHITELIST),
+      timeoutPromise
+    ]) as AssetsPluginContext;
+    
+    console.log('Connected to Assets SDK successfully');
     apiClient = AssetsApiClient.fromPluginContext(contextService);
     document.getElementById('update').onclick = function() {onUpdate()};
     await loadStatus();
   } catch (error) {
+    console.error('Error during initialization:', error);
     // Check if it's a whitelist error
     const currentUrl = window.location.ancestorOrigins?.[0] || window.parent?.location?.origin || 'unknown';
     const errorMessage = error?.message || error?.toString() || 'Unknown error';
