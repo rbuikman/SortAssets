@@ -1,8 +1,10 @@
 body {
     margin: 0;
-    padding: 10px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    padding: 20px;
+    font-family: Lato, sans-serif;
     font-size: 14px;
+    color: #333;
+    background-color: #fff;
 }
 
 .panel {
@@ -11,8 +13,10 @@ body {
 }
 
 .intro {
-    padding-bottom: 10px;
-    font-weight: 500;
+    padding: 10px 0;
+    font-family: Mulish-SemiBold, OpenSans-SemiBold, Lato, sans-serif;
+    font-weight: 600;
+    color: #333;
 }
 
 .controls {
@@ -20,50 +24,69 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e2e2;
 }
 
 .view-toggle {
     display: flex;
-    gap: 5px;
+    gap: 0;
 }
 
 .view-btn {
-    padding: 6px 12px;
-    border: 1px solid #ddd;
-    background: white;
+    padding: 5px 20px;
+    border: 1px solid #0095e0;
+    background: #fff;
+    color: #0095e0;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 0;
     font-size: 13px;
+    font-weight: 600;
+    font-family: Mulish-SemiBold, OpenSans-SemiBold, Lato, sans-serif;
+    height: 25px;
+    line-height: 14px;
+}
+
+.view-btn:first-child {
+    border-radius: 4px 0 0 4px;
+}
+
+.view-btn:last-child {
+    border-radius: 0 4px 4px 0;
+    margin-left: -1px;
 }
 
 .view-btn:hover {
-    background: #f5f5f5;
+    background: #0095e0;
+    color: #fff;
+    border-color: #0095e0;
 }
 
 .view-btn.active {
-    background: #007bff;
-    color: white;
-    border-color: #007bff;
+    background: #0095e0;
+    color: #fff;
+    border-color: #0095e0;
 }
 
 .assets-container {
     margin: 15px 0;
     max-height: 400px;
     overflow-y: auto;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 1px solid #e2e2e2;
+    border-radius: 2px;
+    background-color: #f2f3f5;
 }
 
 /* Table View */
 .assets-table {
     width: 100%;
     border-collapse: collapse;
+    background: #fff;
 }
 
 .assets-table thead {
-    background: #f8f9fa;
+    background: #f7f7f7;
+    border-bottom: 1px solid #e2e2e2;
     position: sticky;
     top: 0;
 }
@@ -72,16 +95,35 @@ body {
 .assets-table td {
     padding: 10px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #e2e2e2;
+    border-right: 1px solid #e2e2e2;
+    color: #666;
+}
+
+.assets-table th {
+    color: #959595;
+    font-weight: 400;
+    font-family: Lato, sans-serif;
+}
+
+.assets-table th:last-child,
+.assets-table td:last-child {
+    border-right: none;
 }
 
 .assets-table tbody tr {
     cursor: move;
     transition: background-color 0.2s;
+    background: #fff;
 }
 
 .assets-table tbody tr:hover {
-    background: #f8f9fa;
+    background: #fff;
+    color: #333;
+}
+
+.assets-table tbody tr:hover td {
+    color: #333;
 }
 
 .assets-table tbody tr.sortable-ghost {
@@ -93,12 +135,12 @@ body {
     width: 50px;
     height: 50px;
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: 2px;
 }
 
 .drag-handle {
     cursor: move;
-    color: #999;
+    color: #959595;
     margin-right: 8px;
 }
 
@@ -106,22 +148,24 @@ body {
 .assets-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-    padding: 15px;
+    gap: 18px;
+    padding: 18px;
+    background: #f2f3f5;
 }
 
 .asset-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 10px;
+    border: 1px solid #e2e2e2;
+    border-radius: 2px;
+    padding: 12px;
     cursor: move;
     transition: all 0.2s;
-    background: white;
+    background: #fff;
 }
 
 .asset-card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
+    border-color: #ccc;
+    box-shadow: none;
+    transform: none;
 }
 
 .asset-card.sortable-ghost {
@@ -132,60 +176,82 @@ body {
     width: 100%;
     height: 120px;
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: 0;
     margin-bottom: 8px;
-    background: #f5f5f5;
+    background: #e2e2e2;
 }
 
 .asset-card-name {
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 400;
+    color: #333;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-family: Lato, sans-serif;
 }
 
 .asset-card-info {
     font-size: 11px;
-    color: #666;
+    color: #959595;
     margin-top: 4px;
 }
 
 #status {
-    padding: 6px 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
+    padding: 5px 10px;
+    border: 1px solid #e2e2e2;
+    border-radius: 2px;
+    font-size: 13px;
     margin-left: 10px;
+    color: #777;
+    font-family: Lato, sans-serif;
+    height: 25px;
+}
+
+#status:hover {
+    border-color: #959595;
 }
 
 #update {
-    padding: 8px 20px;
-    background: #007bff;
-    color: white;
-    border: none;
+    padding: 5px 20px;
+    background: #0095e0;
+    color: #fff;
+    border: 1px solid #0095e0;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: Mulish-SemiBold, OpenSans-SemiBold, Lato, sans-serif;
+    height: 25px;
+    line-height: 14px;
 }
 
 #update:hover {
-    background: #0056b3;
+    background: #0081c2;
+    border-color: #0081c2;
+}
+
+#update:disabled {
+    background: #eee;
+    border-color: #eee;
+    color: #fff;
+    cursor: default;
 }
 
 .loading {
     text-align: center;
     padding: 40px;
-    color: #666;
+    color: #959595;
+    font-family: Lato, sans-serif;
 }
 
 .error {
-    color: #dc3545;
+    color: #ea564b;
     padding: 10px;
-    background: #f8d7da;
-    border: 1px solid #f5c6cb;
+    background: #fff;
+    border: 1px solid #e2e2e2;
     border-radius: 4px;
     margin: 10px 0;
+    font-family: Lato, sans-serif;
 }
 
