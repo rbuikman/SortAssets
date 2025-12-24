@@ -3,9 +3,7 @@ import Sortable from 'sortablejs';
 import './style.css';
 import * as config from '../config.js';
 
-const folderDiv = document.getElementById('folderDiv');
 const introDiv = document.getElementById('intro');
-const folderPathSpan = document.getElementById('folderPath');
 const assetsContainer = document.getElementById('assetsContainer');
 const tableViewBtn = document.getElementById('tableViewBtn');
 const thumbnailViewBtn = document.getElementById('thumbnailViewBtn');
@@ -21,6 +19,8 @@ let sortableInstance: Sortable | null = null;
 async function fetchAssets() {
   try {
     let folderSelection;
+
+    let folderPath = 'unknown';
     
     if (isDemoMode) {
       // Demo data
@@ -32,7 +32,7 @@ async function fetchAssets() {
       ];
     } else {
       folderSelection = contextService.context.activeTab.folderSelection;
-      const folderPath = folderSelection[0].assetPath;
+      folderPath = folderSelection[0].assetPath;
       
       // Query to get all assets in the folder
       const query = `ancestorPaths:"${folderPath}"`;
@@ -46,7 +46,7 @@ async function fetchAssets() {
     }
     
     renderAssets();
-    introDiv.innerHTML = `<b>${assets.length}</b> assets in folder`;
+    introDiv.innerHTML = `<b>${assets.length}</b> assets in folder [${folderPath}]`;
   } catch (error) {
     introDiv.innerHTML = '<span class="error">Error loading assets</span>';
   }
@@ -160,19 +160,7 @@ function getAssetSize(asset: any): string {
 }
 
 const loadFolderInfo = async () => {
-  let folderSelection;
-  
-  if (isDemoMode) {
-    // Demo mode for standalone testing
-    folderSelection = [{ name: 'Demo Folder', assetPath: '/demo/folder' }];
-  } else {
-    folderSelection = contextService.context.activeTab.folderSelection;
-  }
-  
-  const folderName = folderSelection[0].name;
-  folderDiv.innerHTML = '<b>Folder</b>: ' + folderName;
-  folderPathSpan.innerHTML = folderName;
-  
+    
   // Fetch and display assets
   await fetchAssets();
 };
