@@ -136,6 +136,14 @@ body {
     font-size: 14px;
 }
 
+.assets-table th:first-child,
+.assets-table td:first-child,
+.assets-table th:last-child,
+.assets-table td:last-child {
+    width: 1%;
+    white-space: nowrap;
+}
+
 .assets-table th {
     color: #959595;
     font-weight: 400;
