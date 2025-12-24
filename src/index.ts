@@ -76,16 +76,15 @@ async function fetchAssets() {
         }
       }
       
-      // Query to get all assets in the folder
+      // Query to get all assets in the folder, sorted by explicitSortOrder
       const query = `ancestorPaths:"${folderPath}" AND NOT assetType:collection`;
       const searchResponse = await apiClient.search({
         q: query,
         num: 100,
-        sort: 'name',
+        sort: 'explicitSortOrder asc,name asc',
         appendRequestSecret: true
       });
       
-      // Filter out collections
       assets = (searchResponse.hits || []);
     }
     
@@ -250,6 +249,21 @@ function renderThumbnailView() {
   assetsContainer.innerHTML = html;
 }
 
+// Update asset sort order in WoodWing Assets
+async function updateAssetSortOrder(assetId: string, sortOrder: number) {
+  try {
+    await apiClient.update({
+      id: assetId,
+      metadata: {
+        explicitSortOrder: sortOrder
+      },
+      appendRequestSecret: true
+    });
+  } catch (error) {
+    console.error(`Failed to update sort order for asset ${assetId}:`, error);
+  }
+}
+
 // Initialize SortableJS
 function initializeSortable() {
   const sortableList = document.getElementById('sortableList');
@@ -259,10 +273,29 @@ function initializeSortable() {
     animation: 150,
     handle: viewMode === 'table' ? 'tr' : '.asset-card',
     ghostClass: 'sortable-ghost',
-    onEnd: (evt) => {
+    onEnd: async (evt) => {
       // Reorder assets array
       const item = assets.splice(evt.oldIndex!, 1)[0];
       assets.splice(evt.newIndex!, 0, item);
+      
+      // Update explicitSortOrder for all assets (starting from 1)
+      const updatePromises: Promise<void>[] = [];
+      assets.forEach((asset, index) => {
+        const newSortOrder = index + 1;
+        const currentSortOrder = asset.metadata?.explicitSortOrder;
+        
+        // Only update if the sort order has changed
+        if (currentSortOrder !== newSortOrder) {
+          asset.metadata = asset.metadata || {};
+          asset.metadata.explicitSortOrder = newSortOrder;
+          updatePromises.push(updateAssetSortOrder(asset.id, newSortOrder));
+        }
+      });
+      
+      // Wait for all updates to complete
+      if (updatePromises.length > 0) {
+        await Promise.all(updatePromises);
+      }
     }
   });
 }
