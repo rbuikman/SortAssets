@@ -180,6 +180,45 @@ body {
     margin-right: 8px;
 }
 
+.asset-link {
+    text-decoration: none;
+    font-size: 18px;
+    color: #0095e0;
+    cursor: pointer;
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.asset-link:hover {
+    transform: scale(1.2);
+    color: #0081c2;
+}
+
+.asset-link-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #0095e0;
+    background: rgba(255, 255, 255, 0.9);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.asset-link-icon:hover {
+    background: #0095e0;
+    color: #fff;
+    transform: scale(1.1);
+}
+
 /* Thumbnail View */
 .assets-grid {
     display: grid;
@@ -196,6 +235,7 @@ body {
     cursor: move;
     transition: all 0.2s;
     background: #fff;
+    position: relative;
 }
 
 .asset-card:hover {
