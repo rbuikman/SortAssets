@@ -51,33 +51,68 @@ async function onUpdate() {
 }
 
 (async () => {
-  console.log('Plugin initialization started');
+  console.log('=== Plugin initialization started ===');
+  console.log('Window location:', window.location.href);
+  console.log('Parent origin:', window.parent?.location?.origin || 'Cannot access parent origin');
+  console.log('Ancestor origins:', window.location.ancestorOrigins);
+  console.log('Is in iframe:', window.self !== window.top);
+  console.log('Configured whitelist:', config.CLIENT_URL_WHITELIST);
+  
   try {
     console.log('Attempting to connect to Assets SDK...');
+    console.log('Starting AssetsPluginContext.get() with timeout of 5 seconds');
     
-    // Add timeout to prevent hanging when not embedded in Assets
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Timeout: Not embedded in WoodWing Assets')), 2000)
-    );
+    // Increase timeout and add more logging
+    const timeoutPromise = new Promise((_, reject) => {
+      const timeoutId = setTimeout(() => {
+        console.error('TIMEOUT: AssetsPluginContext.get() did not respond within 5 seconds');
+        console.log('This usually means:');
+        console.log('1. Plugin is not embedded in WoodWing Assets iframe');
+        console.log('2. WoodWing Assets is not sending the context message');
+        console.log('3. There is a communication issue between iframe and parent');
+        reject(new Error('Timeout: Not embedded in WoodWing Assets'));
+      }, 5000);
+      
+      // Log that timeout is set
+      console.log('Timeout set:', timeoutId);
+    });
+    
+    console.log('Calling AssetsPluginContext.get()...');
+    const contextPromise = AssetsPluginContext.get(config.CLIENT_URL_WHITELIST);
+    console.log('AssetsPluginContext.get() called, promise created');
     
     contextService = await Promise.race([
-      AssetsPluginContext.get(config.CLIENT_URL_WHITELIST),
+      contextPromise,
       timeoutPromise
     ]) as AssetsPluginContext;
     
-    console.log('Connected to Assets SDK successfully');
+    console.log('✓ Connected to Assets SDK successfully!');
+    console.log('Context received:', contextService);
+    console.log('Context data:', contextService?.context);
+    
     apiClient = AssetsApiClient.fromPluginContext(contextService);
+    console.log('API Client created:', apiClient);
+    
     document.getElementById('update').onclick = function() {onUpdate()};
     await loadStatus();
+    console.log('=== Plugin initialization complete ===');
   } catch (error) {
-    console.error('Error during initialization:', error);
+    console.error('=== Error during initialization ===');
+    console.error('Error object:', error);
+    console.error('Error message:', error?.message);
+    console.error('Error stack:', error?.stack);
+    
     // Check if it's a whitelist error
     const currentUrl = window.location.ancestorOrigins?.[0] || window.parent?.location?.origin || 'unknown';
     const errorMessage = error?.message || error?.toString() || 'Unknown error';
     
+    console.log('Current URL for whitelist check:', currentUrl);
+    console.log('Error message content:', errorMessage);
+    
     if (errorMessage.includes('whitelist') || errorMessage.includes('not allowed') || errorMessage.includes('origin')) {
       // Whitelist configuration error
       isDemoMode = true;
+      console.error('>>> WHITELIST ERROR DETECTED <<<');
       console.error('Whitelist error:', error);
       console.log('Current parent URL:', currentUrl);
       console.log('Configured whitelist:', config.CLIENT_URL_WHITELIST);
@@ -96,6 +131,7 @@ async function onUpdate() {
     } else {
       // Running in standalone mode (not embedded in WoodWing Assets)
       isDemoMode = true;
+      console.log('>>> RUNNING IN DEMO MODE <<<');
       console.log('Running in demo mode - not connected to WoodWing Assets');
       console.log('Error:', error);
       introDiv.innerHTML = '<strong>Demo Mode</strong><br>This plugin must be embedded in WoodWing Assets to work properly. Currently showing demo data.';
