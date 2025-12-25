@@ -252,12 +252,10 @@ function renderThumbnailView() {
 // Update asset sort order in WoodWing Assets
 async function updateAssetSortOrder(assetId: string, sortOrder: number) {
   try {
-    await apiClient.update({
-      id: assetId,
+    await apiClient.update(assetId, {
       metadata: {
         explicitSortOrder: sortOrder
-      },
-      appendRequestSecret: true
+      }
     });
   } catch (error) {
     console.error(`Failed to update sort order for asset ${assetId}:`, error);
