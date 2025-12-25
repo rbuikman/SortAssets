@@ -575,8 +575,8 @@ document.addEventListener('click', (e) => {
       isEditMode = false;
       originalSortOrders.clear();
       
-      // Re-render to show read-only values and update button visibility
-      renderAssets();
+      // Refresh the table to get latest data from server
+      await fetchAssets();
     })();
   }
   
