@@ -251,7 +251,8 @@ body {
 
 .assets-table th:nth-child(2),
 .assets-table td:nth-child(2) {
-    width: calc(var(--thumbnail-size) * 0.33 + 20px);
+    width: calc(var(--thumbnail-size) * 0.33 + 10px);
+    max-width: calc(var(--thumbnail-size) * 0.33 + 10px);
 }
 
 /* Narrow width for explicitSortOrder column */
