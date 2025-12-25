@@ -1,6 +1,6 @@
 # SortAssets
 
-A WoodWing Assets external plugin for bulk updating asset status in folders.
+A WoodWing Assets external plugin for sorting assets
 
 ## Development
 
@@ -16,22 +16,12 @@ npm run dev
 npm run build
 ```
 
-### Debugging
-1. Run `npm run dev`
-2. Open http://localhost:4002 in your browser
-3. Press F12 (or Cmd+Option+I) to open DevTools
-4. Check Console tab for errors and logs
-5. Test in WoodWing Assets by setting the plugin URL to `http://localhost:4002`
-
 ### Deployment
 ```bash
-# Deploy to GitHub Pages
-npm run deploy:gh-pages
+# Deploy
+Host this plugin as a static website somewhere
 
-# Or deploy to Surge
-npm run deploy:surge
-```
-
+For example:
 Live URL: https://rbuikman.github.io/SortAssets/
 
 ## Configuration
@@ -43,10 +33,8 @@ Edit [config.js](config.js) to configure:
 
 1. Go to Management Console > Plugins > External Action plugins
 2. Add a new plugin with:
-   - **Name**: Set status to all files in folder
-   - **URL**: https://rbuikman.github.io/SortAssets/ (or http://localhost:4002 for testing)
-   - **Title**: Set status to all files in folder
-   - **User interface**: Dialog
-   - **Width**: 480
-   - **Height**: 240
+   - **Name**: Sort Assets in Folder
+   - **URL**: https://rbuikman.github.io/SortAssets/
+   - **Title**: Sort Assets in Folder
+   - **User interface**: Tab
    - **Add location**: Toolbar, Folder context menu
