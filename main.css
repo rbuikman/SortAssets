@@ -223,6 +223,7 @@ body {
     border-right: 1px solid #e2e2e2;
     color: #666;
     font-size: 14px;
+    position: relative;
 }
 
 .assets-table th:first-child,
@@ -231,6 +232,21 @@ body {
 .assets-table td:last-child {
     width: 1%;
     white-space: nowrap;
+}
+
+/* Column resize handle */
+.resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: col-resize;
+    user-select: none;
+}
+
+.resize-handle:hover {
+    background: rgba(0, 149, 224, 0.3);
 }
 
 .assets-table th:nth-child(2),
