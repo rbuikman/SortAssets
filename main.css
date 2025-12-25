@@ -216,6 +216,21 @@ body {
     margin-right: 8px;
 }
 
+.sort-order-input {
+    width: 60px;
+    padding: 4px 8px;
+    border: 1px solid #e2e2e2;
+    border-radius: 2px;
+    font-size: 14px;
+    font-family: Lato, sans-serif;
+    color: #333;
+}
+
+.sort-order-input:focus {
+    outline: none;
+    border-color: #0095e0;
+}
+
 .asset-link {
     text-decoration: none;
     font-size: 18px;
