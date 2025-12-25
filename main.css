@@ -254,6 +254,15 @@ body {
     width: calc(var(--thumbnail-size) * 0.33 + 20px);
 }
 
+/* Narrow width for explicitSortOrder column */
+.assets-table th[data-column="explicitSortOrder"],
+.assets-table td:has(.sort-order-input),
+.assets-table td:has(.sort-order-input) + td + td + td {
+    width: 80px;
+    min-width: 80px;
+    max-width: 80px;
+}
+
 .assets-table th {
     color: #959595;
     font-weight: 400;
