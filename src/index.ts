@@ -293,7 +293,13 @@ function renderTableView() {
   
   // Format column header (camelCase to Title Case)
   const formatHeader = (col: string): string => {
-    const lastPart = col.includes('.') ? col.split('.').pop() : col;
+    let lastPart = col.includes('.') ? col.split('.').pop() : col;
+    
+    // Remove cf_ prefix if present
+    if (lastPart.startsWith('cf_')) {
+      lastPart = lastPart.substring(3);
+    }
+    
     const title = lastPart.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
     
     // Add edit controls for explicitSortOrder column
