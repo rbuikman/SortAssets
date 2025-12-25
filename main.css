@@ -35,43 +35,35 @@ body {
     border-bottom: 1px solid #e2e2e2;
 }
 
-.edit-controls {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.edit-btn,
-.save-btn,
-.cancel-btn {
-    padding: 5px 15px;
-    border: 1px solid #0095e0;
-    background: #fff;
+.header-icon-btn {
+    background: none;
+    border: none;
     color: #0095e0;
     cursor: pointer;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: Mulish-SemiBold, OpenSans-SemiBold, Lato, sans-serif;
-    height: 25px;
-    line-height: 14px;
+    padding: 2px 4px;
+    margin-left: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.2s;
+    vertical-align: middle;
 }
 
-.edit-btn:hover,
-.save-btn:hover {
-    background: #0095e0;
-    color: #fff;
+.header-icon-btn:hover {
+    color: #0081c2;
+    transform: scale(1.1);
 }
 
-.cancel-btn {
-    border-color: #959595;
+.header-icon-btn.cancel {
     color: #959595;
 }
 
-.cancel-btn:hover {
-    background: #959595;
-    color: #fff;
+.header-icon-btn.cancel:hover {
+    color: #666;
+}
+
+.header-icon-btn svg {
+    display: block;
 }
 
 .thumbnail-size-control {
