@@ -20,6 +20,22 @@ let thumbnailSize: number = 150;
 let isEditMode: boolean = false;
 let originalSortOrders: Map<string, number> = new Map();
 let currentFolderPath: string = 'unknown';
+let isResizing: boolean = false;
+let currentResizeColumn: HTMLElement | null = null;
+let startX: number = 0;
+let startWidth: number = 0;
+let columnWidths: Map<string, number> = new Map();
+
+// Load saved column widths from localStorage
+const savedColumnWidths = localStorage.getItem('sortassets_columnWidths');
+if (savedColumnWidths) {
+  try {
+    const parsed = JSON.parse(savedColumnWidths);
+    columnWidths = new Map(Object.entries(parsed));
+  } catch (e) {
+    console.error('Failed to parse saved column widths');
+  }
+}
 
 // Load saved view mode from local storage
 const savedViewMode = localStorage.getItem('sortassets_viewMode');
@@ -150,6 +166,95 @@ function renderAssets() {
   initializeSortable();
 }
 
+// Apply saved column widths to table
+function applyColumnWidths() {
+  const table = assetsContainer?.querySelector('.assets-table');
+  if (!table) return;
+  
+  const headers = table.querySelectorAll('th[data-column]');
+  headers.forEach((th: HTMLElement) => {
+    const column = th.dataset.column;
+    if (column && columnWidths.has(column)) {
+      const width = columnWidths.get(column);
+      th.style.width = `${width}px`;
+      
+      // Apply to all cells in this column
+      const columnIndex = Array.from(th.parentElement.children).indexOf(th);
+      const rows = table.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const cell = row.children[columnIndex] as HTMLElement;
+        if (cell) cell.style.width = `${width}px`;
+      });
+    }
+  });
+}
+
+// Initialize column resize functionality
+function initializeColumnResize() {
+  const table = assetsContainer?.querySelector('.assets-table');
+  if (!table) return;
+  
+  const resizeHandles = table.querySelectorAll('.resize-handle');
+  
+  resizeHandles.forEach(handle => {
+    handle.addEventListener('mousedown', (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const th = (e.target as HTMLElement).parentElement as HTMLElement;
+      if (!th || !th.dataset.column) return;
+      
+      isResizing = true;
+      currentResizeColumn = th;
+      startX = e.pageX;
+      startWidth = th.offsetWidth;
+      
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+  });
+  
+  document.addEventListener('mousemove', (e: MouseEvent) => {
+    if (!isResizing || !currentResizeColumn) return;
+    
+    const diff = e.pageX - startX;
+    const newWidth = Math.max(50, startWidth + diff); // Minimum 50px
+    
+    currentResizeColumn.style.width = `${newWidth}px`;
+    
+    // Apply to all cells in this column
+    const table = assetsContainer?.querySelector('.assets-table');
+    if (table) {
+      const columnIndex = Array.from(currentResizeColumn.parentElement.children).indexOf(currentResizeColumn);
+      const rows = table.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const cell = row.children[columnIndex] as HTMLElement;
+        if (cell) cell.style.width = `${newWidth}px`;
+      });
+    }
+  });
+  
+  document.addEventListener('mouseup', () => {
+    if (isResizing && currentResizeColumn) {
+      // Save column width
+      const column = currentResizeColumn.dataset.column;
+      if (column) {
+        const width = currentResizeColumn.offsetWidth;
+        columnWidths.set(column, width);
+        
+        // Persist to localStorage
+        const widthsObj = Object.fromEntries(columnWidths);
+        localStorage.setItem('sortassets_columnWidths', JSON.stringify(widthsObj));
+      }
+    }
+    
+    isResizing = false;
+    currentResizeColumn = null;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+}
+
 // Render table view
 function renderTableView() {
   if (assets.length === 0) {
@@ -223,8 +328,8 @@ function renderTableView() {
       <thead>
         <tr>
           <th></th>
-          <th>Thumbnail</th>
-          ${columns.map(col => `<th>${formatHeader(col)}</th>`).join('')}
+          <th data-column="thumbnail">Thumbnail<span class="resize-handle"></span></th>
+          ${columns.map(col => `<th data-column="${col}">${formatHeader(col)}<span class="resize-handle"></span></th>`).join('')}
           <th></th>
         </tr>
       </thead>
@@ -261,6 +366,12 @@ function renderTableView() {
       </tbody>
     </table>
   `;  assetsContainer.innerHTML = html;
+  
+  // Apply saved column widths
+  applyColumnWidths();
+  
+  // Initialize resize handlers
+  initializeColumnResize();
 }
 
 // Render thumbnail view
