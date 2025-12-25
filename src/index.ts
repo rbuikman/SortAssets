@@ -5,14 +5,13 @@ import * as config from '../config.js';
 
 const introDiv = document.getElementById('intro');
 const assetsContainer = document.getElementById('assetsContainer');
-const tableViewBtn = document.getElementById('tableViewBtn');
-const thumbnailViewBtn = document.getElementById('thumbnailViewBtn');
-const refreshBtn = document.getElementById('refreshBtn');
+const tableViewBtn = document.getElementById('tableViewBtn') as HTMLButtonElement;
+const thumbnailViewBtn = document.getElementById('thumbnailViewBtn') as HTMLButtonElement;
+const refreshBtn = document.getElementById('refreshBtn') as HTMLButtonElement;
 const thumbnailSizeSlider = document.getElementById('thumbnailSizeSlider') as HTMLInputElement;
 
 let apiClient: AssetsApiClient;
 let contextService: AssetsPluginContext;
-let isDemoMode = false;
 let viewMode: 'table' | 'thumbnails' = 'table';
 let assets: any[] = [];
 let sortableInstance: Sortable | null = null;
@@ -20,6 +19,7 @@ let currentParentUrl: string = '';
 let thumbnailSize: number = 150;
 let isEditMode: boolean = false;
 let originalSortOrders: Map<string, number> = new Map();
+let currentFolderPath: string = 'unknown';
 
 // Load saved view mode from local storage
 const savedViewMode = localStorage.getItem('sortassets_viewMode');
@@ -57,21 +57,19 @@ function getColumnConfig(): string | string[] {
 
 // Fetch assets from the selected folder
 async function fetchAssets() {
+  // Show loading message
+  introDiv.innerHTML = '<span class="loading">Loading assets...</span>';
+  assetsContainer.innerHTML = '<div class="loading">Loading...</div>';
+  
+  // Disable view toggle buttons during fetch
+  tableViewBtn.disabled = true;
+  thumbnailViewBtn.disabled = true;
+  if (refreshBtn) refreshBtn.disabled = true;
+  
   try {
-    let folderSelection;
+    let folderSelection = contextService.context.activeTab.folderSelection;
 
     let folderPath = 'unknown';
-    
-    if (isDemoMode) {
-      // Demo data
-      assets = [
-        { id: '1', name: 'Demo Image 1.jpg', previewUrl: 'https://via.placeholder.com/150', status: 'Active', fileSize: '2.5 MB' },
-        { id: '2', name: 'Demo Image 2.jpg', previewUrl: 'https://via.placeholder.com/150', status: 'Active', fileSize: '1.8 MB' },
-        { id: '3', name: 'Demo Image 3.jpg', previewUrl: 'https://via.placeholder.com/150', status: 'Draft', fileSize: '3.2 MB' },
-        { id: '4', name: 'Demo Document.pdf', previewUrl: 'https://via.placeholder.com/150', status: 'Active', fileSize: '850 KB' },
-      ];
-    } else {
-      folderSelection = contextService.context.activeTab.folderSelection;
       
       console.log('Folder selection from WoodWing:', folderSelection);
       console.log('Stored folder:', sessionStorage.getItem('sortassets_lastSelectedFolder'));
@@ -79,6 +77,7 @@ async function fetchAssets() {
       // Check if a valid folder is selected (not empty or root)
       if (folderSelection && folderSelection.length > 0 && folderSelection[0].assetPath && folderSelection[0].assetPath !== '') {
         folderPath = folderSelection[0].assetPath;
+        currentFolderPath = folderPath;
         // Store in session storage for future use
         sessionStorage.setItem('sortassets_lastSelectedFolder', folderPath);
         console.log('Saved folder to storage:', folderPath);
@@ -88,8 +87,13 @@ async function fetchAssets() {
         console.log('No valid folder selected, using stored folder:', storedFolderPath);
         if (storedFolderPath) {
           folderPath = storedFolderPath;
+          currentFolderPath = folderPath;
         } else {
           introDiv.innerHTML = '<span class="error">No folder selected. Please select a folder in WoodWing Assets.</span>';
+          // Re-enable buttons
+          tableViewBtn.disabled = false;
+          thumbnailViewBtn.disabled = false;
+          if (refreshBtn) refreshBtn.disabled = false;
           return;
         }
       }
@@ -104,7 +108,6 @@ async function fetchAssets() {
       });
       
       assets = (searchResponse.hits || []);
-    }
     
     renderAssets();
     introDiv.innerHTML = `Sorting <b>${assets.length}</b> assets in folder ${folderPath}`;
@@ -120,6 +123,11 @@ async function fetchAssets() {
     
     introDiv.innerHTML = `<span class="error">${errorMessage}</span>`;
     console.error('Error fetching assets:', error);
+  } finally {
+    // Re-enable view toggle buttons after fetch completes
+    tableViewBtn.disabled = false;
+    thumbnailViewBtn.disabled = false;
+    if (refreshBtn) refreshBtn.disabled = false;
   }
 }
 
@@ -369,7 +377,7 @@ function initializeSortable() {
           // Reset to normal message after 3 seconds
           setTimeout(() => {
             if (introDiv.innerHTML.includes('Sort order saved')) {
-              introDiv.innerHTML = `Sorting <b>${assets.length}</b> assets`;
+              introDiv.innerHTML = `Sorting <b>${assets.length}</b> assets in folder ${currentFolderPath}`;
             }
           }, 3000);
         }
@@ -565,7 +573,7 @@ document.addEventListener('click', (e) => {
           introDiv.innerHTML = `Sorting <b>${assets.length}</b> assets - Changes saved successfully`;
           setTimeout(() => {
             if (introDiv.innerHTML.includes('Changes saved')) {
-              introDiv.innerHTML = `Sorting <b>${assets.length}</b> assets`;
+              introDiv.innerHTML = `Sorting <b>${assets.length}</b> assets in folder ${currentFolderPath}`;
             }
           }, 2000);
         }
@@ -642,37 +650,8 @@ if (thumbnailSizeSlider) {
     
     await loadFolderInfo();
   } catch (error) {
-    // Safe way to get current URL
-    let ancestorUrl = 'unknown';
-    let isInIframe = window.self !== window.top;
-    
-    try {
-      if (window.location.ancestorOrigins && window.location.ancestorOrigins.length > 0) {
-        ancestorUrl = window.location.ancestorOrigins[0];
-      }
-    } catch (e) {
-      // Cannot determine ancestor URL
-    }
-    
-    // Check if we're embedded in WoodWing Assets but connection failed
-    if (isInIframe && ancestorUrl !== 'unknown') {
-      // We're in an iframe with a known parent URL - this is likely a whitelist issue
-      isDemoMode = true;
-      
-      introDiv.innerHTML = `
-        <strong style="color: red;">Configuration Error</strong><br>
-        <p>The plugin cannot connect to WoodWing Assets.</p>
-        <p><strong>Parent URL:</strong> <code>${ancestorUrl}</code></p>
-        <p>Please add this URL to the <code>CLIENT_URL_WHITELIST</code> in <code>config.js</code></p>
-        <p><small>Current whitelist: ${JSON.stringify(config.CLIENT_URL_WHITELIST)}</small></p>
-        <p><small>See browser console for more details.</small></p>
-      `;
-      await loadFolderInfo();
-    } else {
-      // Running in standalone mode (not embedded in WoodWing Assets)
-      isDemoMode = true;
-      introDiv.innerHTML = '<strong>Demo Mode</strong><br>This plugin must be embedded in WoodWing Assets to work properly. Currently showing demo data.';
-      await loadFolderInfo();
-    }
+    introDiv.innerHTML = '<span class="error">Please run this plugin from within Assets.</span>';
+    assetsContainer.innerHTML = '';
+    console.error('Plugin initialization error:', error);
   }
 })();

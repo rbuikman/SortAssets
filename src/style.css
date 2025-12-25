@@ -180,6 +180,11 @@ body {
     border-color: #0095e0;
 }
 
+.view-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .view-btn.active {
     background: #0095e0;
     color: #fff;
@@ -226,6 +231,11 @@ body {
 .assets-table td:last-child {
     width: 1%;
     white-space: nowrap;
+}
+
+.assets-table th:nth-child(2),
+.assets-table td:nth-child(2) {
+    width: calc(var(--thumbnail-size) * 0.33 + 20px);
 }
 
 .assets-table th {
