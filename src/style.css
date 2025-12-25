@@ -10,6 +10,7 @@ body {
     flex-direction: column;
     overflow: hidden;
     box-sizing: border-box;
+    --thumbnail-size: 150px;
 }
 
 .panel {
@@ -32,6 +33,64 @@ body {
     margin-bottom: 0;
     padding: 10px 0;
     border-bottom: 1px solid #e2e2e2;
+}
+
+.header-icon-btn {
+    background: none;
+    border: none;
+    color: #0095e0;
+    cursor: pointer;
+    padding: 2px 4px;
+    margin-left: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    vertical-align: middle;
+}
+
+.header-icon-btn:hover {
+    color: #0081c2;
+    transform: scale(1.1);
+}
+
+.header-icon-btn.cancel {
+    color: #959595;
+}
+
+.header-icon-btn.cancel:hover {
+    color: #666;
+}
+
+.header-icon-btn svg {
+    display: block;
+}
+
+.thumbnail-size-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.thumbnail-size-control label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    font-family: Mulish-SemiBold, OpenSans-SemiBold, Lato, sans-serif;
+}
+
+#thumbnailSizeSlider {
+    width: 150px;
+    height: 4px;
+    cursor: pointer;
+    accent-color: #0095e0;
+}
+
+#thumbnailSizeValue {
+    font-size: 13px;
+    color: #666;
+    min-width: 50px;
+    text-align: right;
 }
 
 .column-config {
@@ -65,6 +124,7 @@ body {
 .view-toggle {
     display: flex;
     gap: 0;
+    align-items: center;
 }
 
 .view-btn {
@@ -85,9 +145,33 @@ body {
     border-radius: 4px 0 0 4px;
 }
 
-.view-btn:last-child {
+.view-btn:nth-child(2) {
     border-radius: 0 4px 4px 0;
     margin-left: -1px;
+}
+
+.refresh-btn {
+    padding: 4px 8px;
+    border: 1px solid #0095e0;
+    background: #fff;
+    color: #0095e0;
+    cursor: pointer;
+    border-radius: 4px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    transition: all 0.2s;
+}
+
+.refresh-btn:hover {
+    background: #0095e0;
+    color: #fff;
+}
+
+.refresh-btn svg {
+    display: block;
 }
 
 .view-btn:hover {
@@ -176,8 +260,8 @@ body {
 }
 
 .asset-thumbnail {
-    width: 50px;
-    height: 50px;
+    width: calc(var(--thumbnail-size) * 0.33);
+    height: calc(var(--thumbnail-size) * 0.33);
     object-fit: cover;
     border-radius: 2px;
 }
@@ -186,6 +270,21 @@ body {
     cursor: move;
     color: #959595;
     margin-right: 8px;
+}
+
+.sort-order-input {
+    width: 60px;
+    padding: 4px 8px;
+    border: 1px solid #e2e2e2;
+    border-radius: 2px;
+    font-size: 14px;
+    font-family: Lato, sans-serif;
+    color: #333;
+}
+
+.sort-order-input:focus {
+    outline: none;
+    border-color: #0095e0;
 }
 
 .asset-link {
@@ -230,7 +329,7 @@ body {
 /* Thumbnail View */
 .assets-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--thumbnail-size), 1fr));
     gap: 18px;
     padding: 18px;
     background: #f2f3f5;
@@ -258,7 +357,7 @@ body {
 
 .asset-card-thumbnail {
     width: 100%;
-    height: 120px;
+    height: calc(var(--thumbnail-size) * 0.8);
     object-fit: cover;
     border-radius: 0;
     margin-bottom: 8px;

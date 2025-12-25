@@ -13,7 +13,7 @@ module.exports = {
     // Use '*' to show all asset properties dynamically, or specify an array of property names
     // Property names can use dot notation for nested properties: 'metadata.status'
     COLUMN_CONFIG: {
-        'https://shared-poc-dam.qonqord.cloud': ['name', 'status'], // Show all properties for this URL
+        'https://shared-poc-dam.qonqord.cloud': ['name', 'status', 'explicitSortOrder'], // Show all properties for this URL
         'default': ['name', 'status', 'id', 'fileSize'] // Default columns for any other URL
     }
 };
