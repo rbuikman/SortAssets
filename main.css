@@ -35,6 +35,45 @@ body {
     border-bottom: 1px solid #e2e2e2;
 }
 
+.edit-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.edit-btn,
+.save-btn,
+.cancel-btn {
+    padding: 5px 15px;
+    border: 1px solid #0095e0;
+    background: #fff;
+    color: #0095e0;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: Mulish-SemiBold, OpenSans-SemiBold, Lato, sans-serif;
+    height: 25px;
+    line-height: 14px;
+    transition: all 0.2s;
+}
+
+.edit-btn:hover,
+.save-btn:hover {
+    background: #0095e0;
+    color: #fff;
+}
+
+.cancel-btn {
+    border-color: #959595;
+    color: #959595;
+}
+
+.cancel-btn:hover {
+    background: #959595;
+    color: #fff;
+}
+
 .thumbnail-size-control {
     display: flex;
     align-items: center;
@@ -93,6 +132,7 @@ body {
 .view-toggle {
     display: flex;
     gap: 0;
+    align-items: center;
 }
 
 .view-btn {
@@ -113,9 +153,33 @@ body {
     border-radius: 4px 0 0 4px;
 }
 
-.view-btn:last-child {
+.view-btn:nth-child(2) {
     border-radius: 0 4px 4px 0;
     margin-left: -1px;
+}
+
+.refresh-btn {
+    padding: 4px 8px;
+    border: 1px solid #0095e0;
+    background: #fff;
+    color: #0095e0;
+    cursor: pointer;
+    border-radius: 4px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    transition: all 0.2s;
+}
+
+.refresh-btn:hover {
+    background: #0095e0;
+    color: #fff;
+}
+
+.refresh-btn svg {
+    display: block;
 }
 
 .view-btn:hover {
