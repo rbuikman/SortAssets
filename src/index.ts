@@ -1,7 +1,7 @@
 import { AssetsApiClient, AssetsPluginContext } from '@woodwing/assets-client-sdk';
 import Sortable from 'sortablejs';
 import './style.css';
-import * as config from '../config.js';
+import * as config from '../config/config.js';
 
 const introDiv = document.getElementById('intro');
 const assetsContainer = document.getElementById('assetsContainer');

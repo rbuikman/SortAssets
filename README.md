@@ -26,7 +26,7 @@ Live URL: https://rbuikman.github.io/SortAssets/
 
 ## Configuration
 
-Edit [config.js](config.js) to configure:
+Edit config/config.js to configure:
 - `CLIENT_URL_WHITELIST`: Add your WoodWing Assets Server URL(s)
 
 ## Setup in WoodWing Assets
