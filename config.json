@@ -1,0 +1,10 @@
+{
+    "CLIENT_URL_WHITELIST": [
+        "https://shared-poc-dam.qonqord.cloud",
+        "http://localhost:8080"
+    ],
+    "COLUMN_CONFIG": {
+        "default": ["name", "status", "fileSize", "explicitSortOrder"],
+        "https://shared-poc-dam.qonqord.cloud": ["name", "status", "explicitSortOrder"]
+    }
+}
