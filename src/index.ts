@@ -1,7 +1,12 @@
 import { AssetsApiClient, AssetsPluginContext } from '@woodwing/assets-client-sdk';
 import Sortable from 'sortablejs';
 import './style.css';
-import * as config from '../config/config.js';
+
+// Config will be loaded dynamically at runtime
+let config: {
+  CLIENT_URL_WHITELIST: string[];
+  COLUMN_CONFIG: { [key: string]: string | string[] };
+} | null = null;
 
 const introDiv = document.getElementById('intro');
 const assetsContainer = document.getElementById('assetsContainer');
@@ -58,7 +63,7 @@ if (savedThumbnailSize) {
 
 // Get column configuration for the current URL
 function getColumnConfig(): string | string[] {
-  if (!config.COLUMN_CONFIG) {
+  if (!config || !config.COLUMN_CONFIG) {
     return '*'; // Default to all columns if no config
   }
   
@@ -118,7 +123,7 @@ async function fetchAssets() {
       const query = `ancestorPaths:"${folderPath}" AND NOT assetType:collection`;
       const searchResponse = await apiClient.search({
         q: query,
-        num: 100,
+        num: 10000,
         sort: 'explicitSortOrder-asc,name',
         appendRequestSecret: true
       });
@@ -342,7 +347,7 @@ function renderTableView() {
       <tbody id="sortableList">
         ${assets.map(asset => `
           <tr data-id="${asset.id}">
-            <td><span class="drag-handle">⋮⋮</span></td>
+            <td><span class="drag-handle">&vellip;&vellip;</span></td>
             <td>
               <img src="${getAssetPreview(asset)}" alt="${getAssetName(asset)}" class="asset-thumbnail" />
             </td>
@@ -740,6 +745,20 @@ if (thumbnailSizeSlider) {
 
 (async () => {
   try {
+    // Load configuration from config.json
+    try {
+      const configResponse = await fetch('./config.json');
+      if (!configResponse.ok) {
+        throw new Error('Failed to load config.json');
+      }
+      config = await configResponse.json();
+      console.log('Configuration loaded:', config);
+    } catch (error) {
+      console.error('Error loading config:', error);
+      introDiv.innerHTML = '<span class="error">Failed to load configuration file.</span>';
+      return;
+    }
+    
     // Timeout for Assets SDK connection
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => {
