@@ -120,7 +120,7 @@ async function fetchAssets() {
       }
       
       // Query to get all assets in the folder, sorted by explicitSortOrder
-      const query = `ancestorPaths:"${folderPath}" AND NOT assetType:collection`;
+      const query = `folderPath:"${folderPath}" AND NOT assetType:collection`;
       const searchResponse = await apiClient.search({
         q: query,
         num: 10000,
