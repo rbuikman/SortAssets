@@ -19,7 +19,7 @@
   "bugs": {
     "url": "https://github.com/rbuikman/SortAssets/issues"
   },
-  "homepage": "https://github.com/rbuikman/SortAssets#readme",
+  "homepage": "https://rbuikman.github.io/SortAssets",
   "devDependencies": {
     "copy-webpack-plugin": "^13.0.1",
     "css-loader": "^7.1.2",
