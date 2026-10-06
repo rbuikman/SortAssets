@@ -213,6 +213,7 @@ body {
     border-bottom: 1px solid #e2e2e2;
     position: sticky;
     top: 0;
+    z-index: 2;
 }
 
 .assets-table th,
@@ -265,6 +266,7 @@ body {
 }
 
 .assets-table th {
+    background: #f7f7f7;
     color: #959595;
     font-weight: 400;
     font-family: Lato, sans-serif;
