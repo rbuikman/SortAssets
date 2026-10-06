@@ -1,6 +1,7 @@
 {
     "CLIENT_URL_WHITELIST": [
         "https://shared-poc-dam.qonqord.cloud",
+        "https://funke-test-dam.woodwing.cloud",
         "http://localhost:8080"
     ],
     "COLUMN_CONFIG": {

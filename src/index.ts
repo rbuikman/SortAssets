@@ -291,7 +291,7 @@ function renderTableView() {
     // Always read from metadata
     const value = obj.metadata?.[path];
     if (value === null || value === undefined) return '';
-    if (typeof value === 'object') return JSON.stringify(value);
+    if (typeof value === 'object') return value.formatted ?? JSON.stringify(value);
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     return String(value);
   };
@@ -349,7 +349,7 @@ function renderTableView() {
           <tr data-id="${asset.id}">
             <td><span class="drag-handle">&vellip;&vellip;</span></td>
             <td>
-              <img src="${getAssetPreview(asset)}" alt="${getAssetName(asset)}" class="asset-thumbnail" />
+              <img src="${PLACEHOLDER_IMAGE}" data-src="${getAssetPreview(asset)}" alt="${getAssetName(asset)}" class="asset-thumbnail" />
             </td>
             ${columns.map(col => {
               if (col === 'explicitSortOrder') {
@@ -377,6 +377,7 @@ function renderTableView() {
       </tbody>
     </table>
   `;  assetsContainer.innerHTML = html;
+  loadThumbnails();
   
   // Apply saved column widths
   applyColumnWidths();
@@ -415,7 +416,7 @@ function renderThumbnailView() {
   const getPropertyValue = (obj: any, path: string): string => {
     const value = obj.metadata?.[path];
     if (value === null || value === undefined) return '';
-    if (typeof value === 'object') return JSON.stringify(value);
+    if (typeof value === 'object') return value.formatted ?? JSON.stringify(value);
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     return String(value);
   };
@@ -431,7 +432,7 @@ function renderThumbnailView() {
               <line x1="10" y1="14" x2="21" y2="3"></line>
             </svg>
           </a>
-          <img src="${getAssetPreview(asset)}" alt="${getAssetName(asset)}" class="asset-card-thumbnail" />
+          <img src="${PLACEHOLDER_IMAGE}" data-src="${getAssetPreview(asset)}" alt="${getAssetName(asset)}" class="asset-card-thumbnail" />
           <div class="asset-card-name" title="${columns.length > 0 ? getPropertyValue(asset, columns[0]) : getAssetName(asset)}">${columns.length > 0 ? getPropertyValue(asset, columns[0]) : getAssetName(asset)}</div>
           <div class="asset-card-info">
             ${columns.slice(1).map(col => getPropertyValue(asset, col)).filter(v => v).join(' • ')}
@@ -441,6 +442,7 @@ function renderThumbnailView() {
     </div>
   `;
   assetsContainer.innerHTML = html;
+  loadThumbnails();
 }
 
 // Update asset sort order in WoodWing Assets
@@ -553,7 +555,7 @@ function initializeSortable() {
                   const getPropertyValue = (obj: any, path: string): string => {
                     const value = obj.metadata?.[path];
                     if (value === null || value === undefined) return '';
-                    if (typeof value === 'object') return JSON.stringify(value);
+                    if (typeof value === 'object') return value.formatted ?? JSON.stringify(value);
                     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
                     return String(value);
                   };
@@ -573,11 +575,40 @@ function getAssetName(asset: any): string {
   return asset.metadata?.name || 'Unnamed';
 }
 
+const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIj48cmVjdCB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTkiPk5vIFByZXZpZXc8L3RleHQ+PC9zdmc+';
+
 function getAssetPreview(asset: any): string {
   // Preview/thumbnail URLs are at the top level, not in metadata
-  return asset.thumbnailUrl || 
-         asset.previewUrl ||
-         'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIj48cmVjdCB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTkiPk5vIFByZXZpZXc8L3RleHQ+PC9zdmc+';
+  return asset.thumbnailUrl || asset.previewUrl || PLACEHOLDER_IMAGE;
+}
+
+// Cache of thumbnail URL -> blob object URL, so re-renders don't refetch
+const thumbnailCache = new Map<string, Promise<string>>();
+
+// Load thumbnails via CORS fetch instead of a plain <img src>. Some Assets servers
+// send "Cross-Origin-Resource-Policy: same-site", which blocks direct <img> loads
+// from another site, but CORP does not apply to CORS requests the server allows.
+// Falls back to the direct URL for servers without CORS support.
+function loadThumbnails() {
+  assetsContainer.querySelectorAll<HTMLImageElement>('img[data-src]').forEach(img => {
+    const url = img.dataset.src!;
+    if (url.startsWith('data:')) {
+      img.src = url;
+      return;
+    }
+    let objectUrl = thumbnailCache.get(url);
+    if (!objectUrl) {
+      objectUrl = fetch(url, { mode: 'cors', credentials: 'include' })
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.blob();
+        })
+        .then(blob => URL.createObjectURL(blob))
+        .catch(() => url);
+      thumbnailCache.set(url, objectUrl);
+    }
+    objectUrl.then(src => { img.src = src; });
+  });
 }
 
 const loadFolderInfo = async () => {
