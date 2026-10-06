@@ -5,7 +5,17 @@
         "http://localhost:8080"
     ],
     "COLUMN_CONFIG": {
-        "default": ["name", "status", "fileSize", "explicitSortOrder"],
-        "https://shared-poc-dam.qonqord.cloud": ["name", "status", "explicitSortOrder"]
+        "default": [
+            "name",
+            "status",
+            "fileSize",
+            "explicitSortOrder"
+        ],
+        "https://shared-poc-dam.qonqord.cloud": [
+            "name",
+            "status",
+            "fileSize",
+            "explicitSortOrder"
+        ]
     }
 }

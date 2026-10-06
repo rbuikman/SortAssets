@@ -582,13 +582,74 @@ function getAssetPreview(asset: any): string {
   return asset.thumbnailUrl || asset.previewUrl || PLACEHOLDER_IMAGE;
 }
 
-// Cache of thumbnail URL -> blob object URL, so re-renders don't refetch
+// Cache of thumbnail URL -> image src (blob object URL or the direct URL), so re-renders don't refetch
 const thumbnailCache = new Map<string, Promise<string>>();
 
-// Load thumbnails via CORS fetch instead of a plain <img src>. Some Assets servers
-// send "Cross-Origin-Resource-Policy: same-site", which blocks direct <img> loads
-// from another site, but CORP does not apply to CORS requests the server allows.
-// Falls back to the direct URL for servers without CORS support.
+// How each server's thumbnails must be loaded, per origin:
+// - 'fetch':  CORS fetch -> blob URL. Needed when the server sends
+//             "Cross-Origin-Resource-Policy: same-site", which blocks direct <img> loads
+//             from another site (CORP does not apply to CORS requests the server allows).
+// - 'direct': plain <img src>. Needed when the server sends no CORS headers.
+// The first thumbnail of an unknown server is probed with fetch and the result is remembered
+// in localStorage, so a server without CORS logs a console error only once per browser.
+type ThumbnailMode = 'fetch' | 'direct';
+const thumbnailModes = new Map<string, Promise<ThumbnailMode>>();
+const thumbnailModeKey = (origin: string) => `sortassets_thumbnailMode_${origin}`;
+
+function getThumbnailMode(origin: string): ThumbnailMode | null {
+  try {
+    const saved = localStorage.getItem(thumbnailModeKey(origin));
+    return saved === 'fetch' || saved === 'direct' ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function setThumbnailMode(origin: string, mode: ThumbnailMode | null) {
+  try {
+    if (mode) localStorage.setItem(thumbnailModeKey(origin), mode);
+    else localStorage.removeItem(thumbnailModeKey(origin));
+  } catch {
+    // Storage unavailable; the server is probed again next time
+  }
+}
+
+// Resolves to a blob URL; rejects with a TypeError when CORS blocks the request
+async function fetchThumbnail(url: string): Promise<string> {
+  const response = await fetch(url, { mode: 'cors', credentials: 'include' });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return URL.createObjectURL(await response.blob());
+}
+
+function loadThumbnail(url: string, origin: string): Promise<string> {
+  let mode = thumbnailModes.get(origin);
+  if (!mode) {
+    const saved = getThumbnailMode(origin);
+    if (!saved) {
+      // Probe this server with the current thumbnail; other thumbnails wait for the outcome.
+      // Only a TypeError (CORS/network failure) means fetch can't be used; an HTTP error
+      // response still proves the server allows CORS.
+      const probe = fetchThumbnail(url);
+      mode = probe.then(
+        () => 'fetch' as const,
+        error => (error instanceof TypeError ? 'direct' as const : 'fetch' as const)
+      );
+      mode.then(m => setThumbnailMode(origin, m));
+      thumbnailModes.set(origin, mode);
+      return probe.catch(() => url);
+    }
+    mode = Promise.resolve(saved);
+    thumbnailModes.set(origin, mode);
+  }
+  return mode.then(m => m === 'fetch'
+    ? fetchThumbnail(url).catch(error => {
+        // Saved mode no longer works (e.g. server CORS settings changed): probe again next time
+        if (error instanceof TypeError) setThumbnailMode(origin, null);
+        return url;
+      })
+    : url);
+}
+
 function loadThumbnails() {
   assetsContainer.querySelectorAll<HTMLImageElement>('img[data-src]').forEach(img => {
     const url = img.dataset.src!;
@@ -596,18 +657,21 @@ function loadThumbnails() {
       img.src = url;
       return;
     }
-    let objectUrl = thumbnailCache.get(url);
-    if (!objectUrl) {
-      objectUrl = fetch(url, { mode: 'cors', credentials: 'include' })
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          return response.blob();
-        })
-        .then(blob => URL.createObjectURL(blob))
-        .catch(() => url);
-      thumbnailCache.set(url, objectUrl);
+    const origin = new URL(url, location.href).origin;
+    let src = thumbnailCache.get(url);
+    if (!src) {
+      src = loadThumbnail(url, origin);
+      thumbnailCache.set(url, src);
     }
-    objectUrl.then(src => { img.src = src; });
+    src.then(value => {
+      if (value === url) {
+        // Direct load failed (e.g. server now blocks cross-site images): probe again next time
+        img.onerror = () => {
+          if (getThumbnailMode(origin) === 'direct') setThumbnailMode(origin, null);
+        };
+      }
+      img.src = value;
+    });
   });
 }
 
